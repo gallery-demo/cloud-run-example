@@ -1,0 +1,20 @@
+image: vigneshv59/gallery-build
+init_stages:
+  - build
+services:
+  - 
+    image: docker:dind
+    entrypoint:
+      - dockerd
+    cmd:
+      - "--host"
+      - "tcp://0.0.0.0:2375"
+jobs:
+  build:
+    stage: build
+    script:
+      - gcloud auth activate-service-account $GOOGLE_SERVICE_ACCOUNT --key-file=$GOOGLE_APPLICATION_CREDENTIALS --project=$GOOGLE_PROJECT_ID
+      - gcloud services enable containerregistry.googleapis.com --project $GOOGLE_PROJECT_ID
+      - gcloud auth configure-docker
+      - docker build . -t gcr.io/$GOOGLE_PROJECT_ID/server
+      - docker push gcr.io/$GOOGLE_PROJECT_ID/server
